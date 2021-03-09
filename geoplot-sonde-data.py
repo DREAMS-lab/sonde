@@ -46,15 +46,39 @@ lonvecF = interpolate.interp1d(gps_nparr[:,0], gps_nparr[:,2],fill_value="extrap
 lonvec = lonvecF(sonde_nparr[:,0])
 
 
-NUM=9
-fig,ax = plt.subplots(NUM)
+plot_title = \
+    ['Temp_deg_C',
+     'pH_units',
+     'Depth_m',
+     'SpCond_uS/cm',
+     'Turb_FNU',
+     'HDO_%Sat',
+     'HDO_mg/l',
+     'Chl_ug/l',
+     'CDOM_ppb']
 
+NUM=9
+fig,ax = plt.subplots(3,3)
+WIDTH=1
 for i in range(NUM):
-    pl = ax[i].scatter(lonvec, latvec,c=sonde_nparr[:,i+3],s=5)
-    ax[i].set_xlim([-111.91497219999999, -111.9146689])
-    ax[i].set_ylim([33.375203300000003,33.3756117])
-    fig.colorbar(pl, ax=ax[i])
+    paramvec = sonde_nparr[:, i + 3]
+    _vmax = np.mean(paramvec) + WIDTH * np.std(paramvec)
+    _vmin = np.mean(paramvec) - WIDTH * np.std(paramvec)
+
+    ax_ = ax[int(i/3)][i%3]
+    pl = ax_.scatter(lonvec, latvec, c=paramvec, s=7, vmax=_vmax, vmin=_vmin)
+
+    ax_.set_xlim([-111.91497219999999, -111.9146689])
+    ax_.set_ylim([33.375203300000003, 33.3756117])
+    fig.colorbar(pl, ax=ax_, extend='max')
+    ax_.set_title(plot_title[i])
 
 plt.show()
+#
+# ax = plt.figure()
+# plt.scatter(lonvec, latvec,c=sonde_nparr[:,10],s=10)
+# plt.xlim([-111.91497219999999, -111.9146689])
+# plt.ylim([33.375203300000003,33.3756117])
+# plt.show()
 print("done!")
 
