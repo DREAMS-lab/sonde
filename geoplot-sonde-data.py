@@ -45,8 +45,16 @@ latvec = latvecF(sonde_nparr[:,0])
 lonvecF = interpolate.interp1d(gps_nparr[:,0], gps_nparr[:,2],fill_value="extrapolate")
 lonvec = lonvecF(sonde_nparr[:,0])
 
-plt.scatter(lonvec, latvec,c=sonde_nparr[:,7])
-plt.colorbar()
+
+NUM=9
+fig,ax = plt.subplots(NUM)
+
+for i in range(NUM):
+    pl = ax[i].scatter(lonvec, latvec,c=sonde_nparr[:,i+3],s=5)
+    ax[i].set_xlim([-111.91497219999999, -111.9146689])
+    ax[i].set_ylim([33.375203300000003,33.3756117])
+    fig.colorbar(pl, ax=ax[i])
+
 plt.show()
 print("done!")
 
