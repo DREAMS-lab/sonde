@@ -9,8 +9,8 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF
 
 np.random.seed(1)
-sondefile = '20210308-093511-dreams-manta-cleaned.csv'
-gpsfile = 'navfix-log.txt'
+sondefile = '/home/jdas/roboboato-the-lakes-march-8-20201/20210308-093511-dreams-manta-cleaned.csv'
+gpsfile = '/home/jdas/roboboato-the-lakes-march-8-20201/navfix-log.txt'
 
 line = True
 gps_vec = []
