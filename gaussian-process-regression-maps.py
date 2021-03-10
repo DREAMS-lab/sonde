@@ -66,33 +66,43 @@ lonvecF = interpolate.interp1d(gps_nparr[:, 0], gps_nparr[:, 2], fill_value="ext
 lonvec = lonvecF(sonde_nparr[:, 0])
 
 xx = [lonvec, latvec]
-SONDE_PARAM = 0
 
-X = (np.array([lonvec, latvec])).T
-y_obs = np.array(sonde_nparr[:, SONDE_PARAM + 3])
-kernel = RBF()
-gp = GaussianProcessRegressor(kernel=kernel)
-gp.fit(X, y_obs)
-print("Learned kernel", gp.kernel_)
 
-res = 500
-lin_lat = np.linspace(33.375203300000003, 33.3756117, res)
-lin_lon = np.linspace(-111.91497219999999, -111.9146689, res)
-x1x2 = np.array(list(product(lin_lon, lin_lat)))
-WIDTH = 1
-y_pred, MSE = gp.predict(x1x2, return_std=True)
-_vmax = np.median(y_pred) + WIDTH * np.std(y_pred)
-_vmin = np.median(y_pred) - WIDTH * np.std(y_pred)
-GRID_N = res
-X0p, X1p = x1x2[:, 0].reshape(GRID_N, GRID_N), x1x2[:, 1].reshape(GRID_N, GRID_N)
-Zp = np.reshape(y_pred, (GRID_N, GRID_N))
-plt.pcolormesh(X0p, X1p, Zp, vmax=18.7, vmin=18.3)
-plt.colorbar(extend='max')
-plt.tight_layout()
-plt.figure()
-Zpmse = np.reshape(MSE, (GRID_N, GRID_N))
+def plot_GP_estimates(SONDE_PARAM, fig, ax):
+    WIDTH=1
+    X = (np.array([lonvec, latvec])).T
+    paramvec = sonde_nparr[:, SONDE_PARAM + 3]
+    _vmax = np.mean(paramvec) + WIDTH * np.std(paramvec)
+    _vmin = np.mean(paramvec) - WIDTH * np.std(paramvec)
 
-plt.pcolormesh(X0p, X1p, Zpmse)
-plt.colorbar(extend='max')
+    y_obs = np.array(sonde_nparr[:, SONDE_PARAM + 3])
+    kernel = RBF()
+    gp = GaussianProcessRegressor(kernel=kernel)
+    gp.fit(X, y_obs)
+    print("Learned kernel", gp.kernel_)
+    res = 500
+    lin_lat = np.linspace(33.375203300000003, 33.3756117, res)
+    lin_lon = np.linspace(-111.91497219999999, -111.9146689, res)
+    x1x2 = np.array(list(product(lin_lon, lin_lat)))
+    WIDTH = 1
+    y_pred, MSE = gp.predict(x1x2, return_std=True)
+    _vmax = np.median(y_pred) + WIDTH * np.std(y_pred)
+    _vmin = np.median(y_pred) - WIDTH * np.std(y_pred)
+    GRID_N = res
+    X0p, X1p = x1x2[:, 0].reshape(GRID_N, GRID_N), x1x2[:, 1].reshape(GRID_N, GRID_N)
+    Zp = np.reshape(y_pred, (GRID_N, GRID_N))
+    ax1 = ax[SONDE_PARAM][0]
+    pl = ax1.pcolormesh(X0p, X1p, Zp, vmax=_vmax, vmin=_vmin)
+    fig.colorbar(pl, ax=ax1, extend='max')
+    ax1.set_title(plot_title[SONDE_PARAM])
+    # fig.tight_layout(pl)
+    Zpmse = np.reshape(MSE, (GRID_N, GRID_N))
+    ax2 = ax[SONDE_PARAM][1]
+    pl2 = ax2.pcolormesh(X0p, X1p, Zpmse)
+
+NUM = 9
+fig, ax = plt.subplots(NUM, 2)
+for sonde_param in range(9):
+    plot_GP_estimates(sonde_param, fig, ax)
 
 plt.show()
