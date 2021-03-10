@@ -66,9 +66,9 @@ lonvecF = interpolate.interp1d(gps_nparr[:, 0], gps_nparr[:, 2], fill_value="ext
 lonvec = lonvecF(sonde_nparr[:, 0])
 
 xx = [lonvec, latvec]
-
-
-def plot_GP_estimates(SONDE_PARAM, fig, ax):
+ranges = np.array([[18.0, 18.5], [8.70, 8.95],[8.70, 8.95],[8.70, 8.95],[8.70, 8.95],[8.70, 8.95],[8.70, 8.95],
+                   [14, 50],[14, 50],[5.4, 6.5]], dtype=float)
+def plot_GP_estimates(SONDE_PARAM, fig, ax, idx):
     WIDTH=1
     X = (np.array([lonvec, latvec])).T
     paramvec = sonde_nparr[:, SONDE_PARAM + 3]
@@ -86,23 +86,29 @@ def plot_GP_estimates(SONDE_PARAM, fig, ax):
     x1x2 = np.array(list(product(lin_lon, lin_lat)))
     WIDTH = 1
     y_pred, MSE = gp.predict(x1x2, return_std=True)
-    _vmax = np.median(y_pred) + WIDTH * np.std(y_pred)
-    _vmin = np.median(y_pred) - WIDTH * np.std(y_pred)
+    _vmax = np.mean(y_pred) + (WIDTH * np.std(y_pred))
+    _vmin = np.mean(y_pred) - (WIDTH * (np.std(y_pred)))
     GRID_N = res
     X0p, X1p = x1x2[:, 0].reshape(GRID_N, GRID_N), x1x2[:, 1].reshape(GRID_N, GRID_N)
     Zp = np.reshape(y_pred, (GRID_N, GRID_N))
-    ax1 = ax[SONDE_PARAM][0]
-    pl = ax1.pcolormesh(X0p, X1p, Zp, vmax=_vmax, vmin=_vmin)
+    ax1 = ax[idx][0]
+    pl = ax1.pcolormesh(X0p, X1p, Zp, vmin=ranges[SONDE_PARAM,0], vmax=ranges[SONDE_PARAM,1])
     fig.colorbar(pl, ax=ax1, extend='max')
     ax1.set_title(plot_title[SONDE_PARAM])
     # fig.tight_layout(pl)
     Zpmse = np.reshape(MSE, (GRID_N, GRID_N))
-    ax2 = ax[SONDE_PARAM][1]
+    ax2 = ax[idx][1]
     pl2 = ax2.pcolormesh(X0p, X1p, Zpmse)
-
-NUM = 9
+    fig.colorbar(pl2, ax=ax2, extend='max')
+    ax2.set_title(plot_title[SONDE_PARAM])
+param_indices = [0,1,7]
+NUM = len(param_indices)
 fig, ax = plt.subplots(NUM, 2)
-for sonde_param in range(9):
-    plot_GP_estimates(sonde_param, fig, ax)
+
+fig.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
+ctr = 0
+for sonde_param in param_indices:
+    plot_GP_estimates(sonde_param, fig, ax, ctr)
+    ctr = ctr+1
 
 plt.show()
